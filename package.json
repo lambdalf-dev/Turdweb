@@ -1,0 +1,28 @@
+{
+  "name": "turdweb",
+  "version": "2.0.0",
+  "description": "A tool for people to cheaply migrate their NFT collection.",
+  "main": "index.js",
+  "author": "Lambdalf the White <lambdalf.dev@gmail.com>",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "build": "forge build",
+    "test": "forge test",
+    "lint": "forge fmt",
+    "test:verbose": "forge test -vvvv",
+    "coverage": "forge coverage --contracts contracts --report lcov; genhtml lcov.info --branch-coverage --output-directory foundry-coverage",
+    "deploy:sepolia": "forge script ./script/DeployScriptTest.sol:DeployScript --broadcast --verify --rpc-url sepolia",
+    "deploy:goerli": "forge script ./script/DeployScriptTest.sol:DeployScript --broadcast --verify --rpc-url goerli",
+    "deploy:polygonMumbai": "forge script ./script/DeployScriptTest.sol:DeployScript --broadcast --verify --rpc-url polygonMumbai",
+    "deploy:mainnet": "forge script ./script/DeployScriptMain.sol:DeployScript --broadcast --verify --rpc-url mainnet",
+    "deploy:polygon": "forge script ./script/DeployScriptMain.sol:DeployScript --broadcast --verify --rpc-url polygon",
+    "deploy:optimism": "forge script ./script/DeployScriptMain.sol:DeployScript --broadcast --verify --rpc-url optimism"
+  },
+  "dependencies": {
+    "@lambdalf-dev/ethereum-contracts": "^2.0.2"
+  },
+  "devDependencies": {
+    "erc721a": "4.2.3"
+  }
+}
