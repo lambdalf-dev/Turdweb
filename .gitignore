@@ -3,10 +3,12 @@
 # Compiler files
 cache/
 out/
+lcov.info
 
 # Ignores development broadcast logs
 broadcast/
 forge-cache/
+foundry-coverage/
 
 # Docs
 docs/

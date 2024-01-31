@@ -99,15 +99,14 @@ contract Deployed is TestHelper, IERC173Events, IERC721Events {
     _approveAllWrapperFixture(BOB.addr);
     vm.prank(ALICE.addr);
     uint256[] memory ids = new uint256[](ALICE_SUPPLY);
-    ids[0] = 0;
-    ids[1] = 1;
-    ids[2] = 2;
-    ids[3] = 3;
-    ids[4] = 4;
-    ids[5] = 5;
-    ids[6] = 7;
-    ids[7] = 8;
-    ids[8] = 9;
+    for (uint256 i; i < ALICE_SUPPLY; ++i) {
+      if (i < BOB_TOKEN) {
+        ids[i] = i;
+      }
+      else {
+        ids[i] = i + BOB_SUPPLY;
+      }
+    }
     testContract.wrap(ids);
     vm.prank(BOB.addr);
     ids = new uint256[](1);
