@@ -49,19 +49,28 @@ contract Wrapped721 is IERC165, ERC173Initializable, ERC2981Initializable, IERC7
   /// @dev List of owner balances
   mapping(address => uint256) private _balances;
   // ***********
+
+  // *******************
+  // * IERC721Metadata *
+  // *******************
+  /// @dev The token's base URI.
+  string private _baseUri;
+  // *******************
   // **************************************
 
   constructor() {
-    initialize(address(0), address(0), address(0), 0);
+    initialize(address(0), address(0), address(0), 0, "");
   }
 
   function initialize(
     address admin_,
     address asset_,
     address royaltyRecipient_,
-    uint96 royaltyRate_
+    uint96 royaltyRate_,
+    string memory baseUri_
   ) public initializer {
     underlyingAsset = IAsset(asset_);
+    _setBaseUri(baseUri_);
     _init_ERC173(admin_);
     _init_ERC2981(royaltyRecipient_, royaltyRate_);
   }
@@ -302,6 +311,21 @@ contract Wrapped721 is IERC165, ERC173Initializable, ERC2981Initializable, IERC7
     }
   }
 
+  // *******************
+  // * IERC721Metadata *
+  // *******************
+  /// @notice Updates the baseUri for the tokens.
+  ///
+  /// @param newBaseUri_ the new baseUri for the tokens
+  ///
+  /// Requirements:
+  ///
+  /// - Caller must be the contract owner.
+  function setBaseUri(string memory newBaseUri_) public onlyOwner {
+    _setBaseUri(newBaseUri_);
+  }
+  // *******************
+
   // ************
   // * IERC2981 *
   // ************
@@ -494,7 +518,7 @@ contract Wrapped721 is IERC165, ERC173Initializable, ERC2981Initializable, IERC7
     if (_owners[tokenId_] == address(0)) {
       revert IERC721_NONEXISTANT_TOKEN(tokenId_);
     }
-    uri = underlyingAsset.tokenURI(tokenId_);
+    return bytes(_baseUri).length > 0 ? string(abi.encodePacked(_baseUri, _toString(tokenId_))) : _toString(tokenId_);
   }
   // *******************
 
@@ -607,5 +631,65 @@ contract Wrapped721 is IERC165, ERC173Initializable, ERC2981Initializable, IERC7
     emit Transfer(fromAddress_, toAddress_, tokenId_);
   }
   // ***********
+
+  // *******************
+  // * IERC721Metadata *
+  // *******************
+  /// @notice Updates the baseUri for the tokens.
+  ///
+  /// @param newBaseUri_ the new baseUri for the tokens
+  ///
+  /// Requirements:
+  ///
+  /// - Caller must be the contract owner.
+  function _setBaseUri(string memory newBaseUri_) internal virtual {
+    _baseUri = newBaseUri_;
+  }
+  /// @dev Converts a `uint256` to its ASCII `string` decimal representation.
+  ///
+  /// @param value_ the value to convert to string.
+  ///
+  /// @return str the string representation of `value_`
+
+  function _toString(uint256 value_) internal pure virtual returns (string memory str) {
+    assembly {
+      // The maximum value of a uint256 contains 78 digits (1 byte per digit), but
+      // we allocate 0xa0 bytes to keep the free memory pointer 32-byte word aligned.
+      // We will need 1 word for the trailing zeros padding, 1 word for the length,
+      // and 3 words for a maximum of 78 digits. Total: 5 * 0x20 = 0xa0.
+      let m := add(mload(0x40), 0xa0)
+      // Update the free memory pointer to allocate.
+      mstore(0x40, m)
+      // Assign the `str` to the end.
+      str := sub(m, 0x20)
+      // Zeroize the slot after the string.
+      mstore(str, 0)
+
+      // Cache the end of the memory to calculate the length later.
+      let end := str
+
+      // We write the string from rightmost digit to leftmost digit.
+      // The following is essentially a do-while loop that also handles the zero case.
+      // prettier-ignore
+      for { let temp := value_ } 1 {} {
+        // solhint-disable-line
+        str := sub(str, 1)
+        // Write the character to the pointer.
+        // The ASCII index of the '0' character is 48.
+        mstore8(str, add(48, mod(temp, 10)))
+        // Keep dividing `temp` until zero.
+        temp := div(temp, 10)
+        // prettier-ignore
+        if iszero(temp) { break }
+      }
+
+      let length := sub(end, str)
+      // Move the pointer 32 bytes leftwards to make room for the length.
+      str := sub(str, 0x20)
+      // Store the length.
+      mstore(str, length)
+    }
+  }
+  // *******************
   // **************************************
 }

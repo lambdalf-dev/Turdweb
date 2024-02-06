@@ -3,7 +3,7 @@
 pragma solidity >=0.8.4 <0.9.0;
 
 import {Migrated721} from "../src/Migrated721.sol";
-import {Migrated721Factory} from "../src/Migrated721Factory.sol";
+import {Factory} from "../src/Factory.sol";
 import {TokenERC721} from "../src/mocks/TokenERC721.sol";
 
 import {TestHelper} from "./TestHelper.sol";
@@ -33,7 +33,7 @@ contract Deployed is TestHelper, IERC173Events, IERC721Events {
     type(IERC165).interfaceId,
     type(IERC2981).interfaceId
   ];
-  Migrated721Factory factory;
+  Factory factory;
   Migrated721 implementation;
   Migrated721 testContract;
   TokenERC721 underlyingAsset;
@@ -63,19 +63,22 @@ contract Deployed is TestHelper, IERC173Events, IERC721Events {
     }
 
     implementation = new Migrated721();
-    factory = new Migrated721Factory();
+    factory = new Factory();
     testContract = Migrated721(
       payable(
         factory.deployClone(
           address(implementation),
-          address(this),
-          address(underlyingAsset),
-          ROYALTY_RECIPIENT.addr,
-          ROYALTY_RATE,
-          MINTED_SUPPLY,
-          NAME,
-          SYMBOL,
-          BASE_URI
+          abi.encodeWithSelector(
+            Migrated721.initialize.selector,
+            address(this),
+            address(underlyingAsset),
+            ROYALTY_RECIPIENT.addr,
+            ROYALTY_RATE,
+            MINTED_SUPPLY,
+            NAME,
+            SYMBOL,
+            BASE_URI
+          )
         )
       )
     );

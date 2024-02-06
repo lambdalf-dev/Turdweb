@@ -2,18 +2,10 @@
 
 pragma solidity >=0.8.4 <0.9.0;
 
-import {Wrapped721} from "./Wrapped721.sol";
-
-contract Wrapped721Factory {
+contract Factory {
   address[] public proxies;
 
-  function deployClone(
-    address implementationContract_,
-    address admin_,
-    address asset_,
-    address royaltyRecipient_,
-    uint96 royaltyRate_
-  ) external returns (address) {
+  function deployClone(address implementationContract_, bytes calldata deploymentData_) external returns (address) {
     // convert the address to 20 bytes
     bytes20 implementationContractInBytes = bytes20(implementationContract_);
     //address to assign a cloned proxy
@@ -66,10 +58,25 @@ contract Wrapped721Factory {
       // code starts at the pointer stored in "clone"
       // code size == 0x37 (55 bytes)
       proxy := create(0, clone, 0x37)
-    }
 
-    // Call initialization
-    Wrapped721(payable(proxy)).initialize(admin_, asset_, royaltyRecipient_, royaltyRate_);
+      // Call initialization
+      // Get the size of deploymentData_
+      // revert if call reverts
+      // The following list explains what the arguments are to the `staticcall` function below
+      // first, we use staticcall to ensure read-only behavior
+      // gas()              : forward all gas
+      // proxy              : contract we are calling
+      // 0x00               : no ether is sent with the call
+      // deploymentData_    : our calldata start location
+      // deploymentDataSize : make sure we send all the calldata
+      // 0x00               : where the return data starts in memory
+      // 0x20               : the offset of where the return data ends in memory
+      calldatacopy(mload(0x40), deploymentData_.offset, deploymentData_.length)
+      if iszero(call(gas(), proxy, 0x00, mload(0x40), deploymentData_.length, 0x00, 0x20)) {
+        returndatacopy(0x00, 0x00, returndatasize())
+        revert(0x00, returndatasize())
+      }
+    }
     proxies.push(proxy);
     return proxy;
   }

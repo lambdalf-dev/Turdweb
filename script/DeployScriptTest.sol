@@ -1,33 +1,29 @@
 pragma solidity 0.8.24;
 
-import {IImmutableCreate2Factory} from "./../src/interfaces/IImmutableCreate2Factory.sol";
+import {DeployBase} from "./DeployBase.sol";
+import {Factory} from "./../src/Factory.sol";
 import {Migrated721} from "./../src/Migrated721.sol";
-import {Migrated721Factory} from "./../src/Migrated721Factory.sol";
 import {Wrapped721} from "./../src/Wrapped721.sol";
-import {Wrapped721Factory} from "./../src/Wrapped721Factory.sol";
-import {Script} from "forge-std/Script.sol";
+import {console} from "forge-std/console.sol";
 
-contract DeployScript is Script {
-  IImmutableCreate2Factory CREATE2 = IImmutableCreate2Factory(0x0000000000FFe8B47B3e2130213B802212439497);
-
+contract DeployScript is DeployBase {
   function run() external {
-    uint256 deployerPrivateKey = vm.envUint("TEST_DEV_PRIVATE_KEY");
+    uint256 deployerPrivateKey = vm.envUint("TEST_PRIVATE_KEY");
 
-    bytes32 migratedSalt = bytes32(0x00) & bytes12(keccak256(abi.encodePacked("MIGRATED721")));
+    bytes memory factoryCode = abi.encodePacked(type(Factory).creationCode);
+
     bytes memory migrated721Code = abi.encodePacked(type(Migrated721).creationCode);
-    bytes memory migrated721FactoryCode = abi.encodePacked(type(Migrated721Factory).creationCode);
 
-    bytes32 wrappedSalt = bytes32(0x00) & bytes12(keccak256(abi.encodePacked("WRAPPED721")));
     bytes memory wrapped721Code = abi.encodePacked(type(Wrapped721).creationCode);
-    bytes memory wrapped721FactoryCode = abi.encodePacked(type(Wrapped721Factory).creationCode);
 
     vm.startBroadcast(deployerPrivateKey);
 
-    address migratedImpl = CREATE2.safeCreate2(migratedSalt, migrated721Code);
-    address migratedFactory = CREATE2.safeCreate2(migratedSalt, migrated721FactoryCode);
-
-    address wrappedImpl = CREATE2.safeCreate2(wrappedSalt, wrapped721Code);
-    address wrappedFactory = CREATE2.safeCreate2(wrappedSalt, wrapped721FactoryCode);
+    address factory = CREATE2.safeCreate2(factorySalt, factoryCode);
+    console.log("Deployed factory at address: ", factory);
+    address migrated = CREATE2.safeCreate2(migratedSalt, migrated721Code);
+    console.log("Deployed migrated at address: ", migrated);
+    address wrapped = CREATE2.safeCreate2(wrappedSalt, wrapped721Code);
+    console.log("Deployed wrapped at address: ", wrapped);
 
     vm.stopBroadcast();
   }

@@ -46,6 +46,12 @@ To deploy, run the following:
 - `yarn deploy:polygon` deploys on Polygon mainnet
 - `yarn deploy:optimism` deploys on Optimism mainnet
 
+### Verification
+
+To verify a contract, run the following:
+
+- `forge verify-contract <ADDRESS> <Contract Name> -c <Chain Name>`
+
 ## Contents
 
 - `src`: The list of contracts included in the library.
@@ -55,7 +61,6 @@ To deploy, run the following:
 
 ## Testnet deployment
 
-- [Migrated721 implementation](https://sepolia.etherscan.io/address/0xe14d9dd98d191240badbe550aee1bed716ca9688#code)
-- [Migrated721 factory](https://sepolia.etherscan.io/address/0xfb30b0df95e6a02944ba29172099180d25282614#code)
-- [Wrapped721 implementation](https://sepolia.etherscan.io/address/0x73122755146e29096a93d2729745803e969b334b#code)
-- [Wrapped721 factory](https://sepolia.etherscan.io/address/0x870693d3deeabf5889d32980d20dae3a99abba24#code)
+- [Factory](https://sepolia.etherscan.io/address/0x064F8943f61Db9c8c870E9b05f6e32042a427ad7#code)
+- [Migrated721](https://sepolia.etherscan.io/address/0x8888596f6c3a142A11E408610F2f4560905f3065#code)
+- [Wrapped721](https://sepolia.etherscan.io/address/0x9978179a9EE76f6C7ff8BCC1FC8Fb13DF1595f36#code)

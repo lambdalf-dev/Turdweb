@@ -3,7 +3,7 @@
 pragma solidity >=0.8.4 <0.9.0;
 
 import {Wrapped721} from "../src/Wrapped721.sol";
-import {Wrapped721Factory} from "../src/Wrapped721Factory.sol";
+import {Factory} from "../src/Factory.sol";
 import {Mock_ERC721A} from "../src/mocks/Mock_ERC721A.sol";
 
 import {TestHelper} from "./TestHelper.sol";
@@ -33,7 +33,7 @@ contract Deployed is TestHelper, IERC173Events, IERC721Events {
     type(IERC165).interfaceId,
     type(IERC2981).interfaceId
   ];
-  Wrapped721Factory factory;
+  Factory factory;
   Wrapped721 implementation;
   Wrapped721 testContract;
   Mock_ERC721A underlyingAsset;
@@ -48,11 +48,19 @@ contract Deployed is TestHelper, IERC173Events, IERC721Events {
     underlyingAsset.mint(ALICE.addr, ALICE_MORE_SUPPLY);
 
     implementation = new Wrapped721();
-    factory = new Wrapped721Factory();
+    factory = new Factory();
     testContract = Wrapped721(
       payable(
         factory.deployClone(
-          address(implementation), address(this), address(underlyingAsset), ROYALTY_RECIPIENT.addr, ROYALTY_RATE
+          address(implementation),
+          abi.encodeWithSelector(
+            Wrapped721.initialize.selector,
+            address(this),
+            address(underlyingAsset),
+            ROYALTY_RECIPIENT.addr,
+            ROYALTY_RATE,
+            BASE_URI
+          )
         )
       )
     );
@@ -102,8 +110,7 @@ contract Deployed is TestHelper, IERC173Events, IERC721Events {
     for (uint256 i; i < ALICE_SUPPLY; ++i) {
       if (i < BOB_TOKEN) {
         ids[i] = i;
-      }
-      else {
+      } else {
         ids[i] = i + BOB_SUPPLY;
       }
     }
@@ -833,6 +840,32 @@ contract Fuzz_setRoyaltyInfo is Deployed {
 }
 // ************
 
+// *******************
+// * IERC721Metadata *
+// *******************
+contract Unit_setBaseUri is Deployed {
+  function test_revertWhen_caller_isNotContractOwner() public {
+    address operator = OPERATOR.addr;
+    string memory newBaseUri = NEW_BASE_URI;
+    vm.prank(operator);
+    vm.expectRevert(abi.encodeWithSelector(IERC173.IERC173_NOT_OWNER.selector, operator));
+    testContract.setBaseUri(newBaseUri);
+  }
+
+  function test_setBaseUri_isSuccess() public {
+    _wrapFixture();
+    string memory newBaseUri = NEW_BASE_URI;
+    uint256 tokenId = TARGET_TOKEN;
+    testContract.setBaseUri(newBaseUri);
+    assertEq(
+      keccak256(abi.encodePacked(testContract.tokenURI(tokenId))),
+      keccak256(abi.encodePacked(newBaseUri, Strings.toString(tokenId))),
+      "invalid uri"
+    );
+  }
+}
+// *******************
+
 // ***********
 // * IERC165 *
 // ***********
@@ -1031,7 +1064,7 @@ contract Unit_tokenURI is Deployed {
     uint256 tokenId = TARGET_TOKEN;
     assertEq(
       keccak256(abi.encodePacked(testContract.tokenURI(tokenId))),
-      keccak256(abi.encodePacked(underlyingAsset.tokenURI(tokenId))),
+      keccak256(abi.encodePacked(BASE_URI, Strings.toString(tokenId))),
       "invalid uri"
     );
   }
@@ -1043,7 +1076,7 @@ contract Fuzz_tokenURI is Deployed {
     vm.assume(tokenId < MINTED_SUPPLY);
     assertEq(
       keccak256(abi.encodePacked(testContract.tokenURI(tokenId))),
-      keccak256(abi.encodePacked(underlyingAsset.tokenURI(tokenId))),
+      keccak256(abi.encodePacked(BASE_URI, Strings.toString(tokenId))),
       "invalid uri"
     );
   }
