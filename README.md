@@ -3,6 +3,7 @@
 A tool for people to cheaply migrate their NFT collection.
 
 [Frontend repo](https://github.com/smitch88/thirdweb-migration-fe/tree/main)
+[Website](https://shift.lambdalf.dev)
 
 ## Running the repo
 
