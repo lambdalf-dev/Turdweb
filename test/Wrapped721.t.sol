@@ -5,6 +5,7 @@ pragma solidity >=0.8.4 <0.9.0;
 import {Wrapped721} from "../src/Wrapped721.sol";
 import {Factory} from "../src/Factory.sol";
 import {Mock_ERC721A} from "../src/mocks/Mock_ERC721A.sol";
+import {Mock_ERC721AOwnable} from "../src/mocks/Mock_ERC721AOwnable.sol";
 
 import {TestHelper} from "./TestHelper.sol";
 import {IERC721Receiver} from "@lambdalf-dev/ethereum-contracts/contracts/interfaces/IERC721Receiver.sol";
@@ -36,19 +37,20 @@ contract Deployed is TestHelper, IERC173Events, IERC721Events {
   Factory factory;
   Wrapped721 implementation;
   Wrapped721 testContract;
-  Mock_ERC721A underlyingAsset;
+  Mock_ERC721AOwnable underlyingAsset;
 
   function setUp() public virtual override {
     super.setUp();
     address[] memory addrs = new address[](1);
     addrs[0] = address(this);
-    underlyingAsset = new Mock_ERC721A();
+    underlyingAsset = new Mock_ERC721AOwnable();
     underlyingAsset.mint(ALICE.addr, ALICE_INIT_SUPPLY);
     underlyingAsset.mint(BOB.addr, BOB_SUPPLY);
     underlyingAsset.mint(ALICE.addr, ALICE_MORE_SUPPLY);
 
     implementation = new Wrapped721();
     factory = new Factory();
+    vm.prank(address(this), address(this));
     testContract = Wrapped721(
       payable(
         factory.deployClone(
@@ -131,6 +133,51 @@ contract Deployed is TestHelper, IERC173Events, IERC721Events {
   function _burnFixture() internal {
     vm.prank(ALICE.addr);
     testContract.burn(TARGET_TOKEN);
+  }
+}
+
+contract Unit_deployment is Deployed {
+  function test_revertWhen_caller_isNotCollectionOwner() public {
+    vm.prank(EVE.addr, EVE.addr);
+    vm.expectRevert(Wrapped721.NOT_COLLECTION_OWNER.selector);
+    Wrapped721 fail = Wrapped721(
+      payable(
+        factory.deployClone(
+          address(implementation),
+          abi.encodeWithSelector(
+            Wrapped721.initialize.selector,
+            address(this),
+            address(underlyingAsset),
+            ROYALTY_RECIPIENT.addr,
+            ROYALTY_RATE,
+            BASE_URI
+          )
+        )
+      )
+    );
+  }
+
+  function test_revertWhen_underlyingAssetNotOwnable() public {
+    Mock_ERC721A nonOwnableAsset;
+    nonOwnableAsset.mint(ALICE.addr, ALICE_INIT_SUPPLY);
+    nonOwnableAsset.mint(BOB.addr, BOB_SUPPLY);
+    nonOwnableAsset.mint(ALICE.addr, ALICE_MORE_SUPPLY);
+    vm.expectRevert();
+    Wrapped721 fail = Wrapped721(
+      payable(
+        factory.deployClone(
+          address(implementation),
+          abi.encodeWithSelector(
+            Wrapped721.initialize.selector,
+            address(this),
+            address(nonOwnableAsset),
+            ROYALTY_RECIPIENT.addr,
+            ROYALTY_RATE,
+            BASE_URI
+          )
+        )
+      )
+    );
   }
 }
 

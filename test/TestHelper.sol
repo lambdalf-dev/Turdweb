@@ -15,6 +15,8 @@ contract Accounts is Test {
   Account public RECIPIENT;
   // Default royalty recipient
   Account public ROYALTY_RECIPIENT;
+  // Default malicious user
+  Account public EVE;
 
   /// @dev Generates a user, labels its address, and funds it with test assets.
   function _createUser(string memory name) internal returns (Account memory account) {
@@ -55,5 +57,6 @@ abstract contract TestHelper is Constants, Accounts {
     OPERATOR = _createUser("Operator");
     RECIPIENT = _createUser("Recipient");
     ROYALTY_RECIPIENT = _createUser("RoyaltyRecipient");
+    EVE = _createUser("Eve");
   }
 }
