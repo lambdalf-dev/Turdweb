@@ -158,7 +158,7 @@ contract Unit_deployment is Deployed {
   }
 
   function test_revertWhen_underlyingAssetNotOwnable() public {
-    Mock_ERC721A nonOwnableAsset;
+    Mock_ERC721A nonOwnableAsset = new Mock_ERC721A();
     nonOwnableAsset.mint(ALICE.addr, ALICE_INIT_SUPPLY);
     nonOwnableAsset.mint(BOB.addr, BOB_SUPPLY);
     nonOwnableAsset.mint(ALICE.addr, ALICE_MORE_SUPPLY);
