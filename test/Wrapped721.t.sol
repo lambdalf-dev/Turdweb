@@ -451,10 +451,7 @@ contract Unit_safeTransferFrom is Deployed {
 
   function test_revertWhen_receiverContract_returns_unexpectedValue() public {
     _wrapFixture();
-    Mock_ERC721Receiver receivingContract = new Mock_ERC721Receiver(
-          RETVAL,
-          Mock_ERC721Receiver.Error.None
-        );
+    Mock_ERC721Receiver receivingContract = new Mock_ERC721Receiver(RETVAL, Mock_ERC721Receiver.Error.None);
     address operator = ALICE.addr;
     address tokenOwner = ALICE.addr;
     address recipient = address(receivingContract);
@@ -469,10 +466,8 @@ contract Unit_safeTransferFrom is Deployed {
 
   function test_revertWhen_receiverContract_reverts_withCustomError() public {
     _wrapFixture();
-    Mock_ERC721Receiver receivingContract = new Mock_ERC721Receiver(
-          type(IERC721Receiver).interfaceId,
-          Mock_ERC721Receiver.Error.RevertWithError
-        );
+    Mock_ERC721Receiver receivingContract =
+      new Mock_ERC721Receiver(type(IERC721Receiver).interfaceId, Mock_ERC721Receiver.Error.RevertWithError);
     address operator = ALICE.addr;
     address tokenOwner = ALICE.addr;
     address recipient = address(receivingContract);
@@ -487,10 +482,8 @@ contract Unit_safeTransferFrom is Deployed {
 
   function test_revertWhen_receiverContract_reverts_withMessage() public {
     _wrapFixture();
-    Mock_ERC721Receiver receivingContract = new Mock_ERC721Receiver(
-          type(IERC721Receiver).interfaceId,
-          Mock_ERC721Receiver.Error.RevertWithMessage
-        );
+    Mock_ERC721Receiver receivingContract =
+      new Mock_ERC721Receiver(type(IERC721Receiver).interfaceId, Mock_ERC721Receiver.Error.RevertWithMessage);
     address operator = ALICE.addr;
     address tokenOwner = ALICE.addr;
     address recipient = address(receivingContract);
@@ -505,10 +498,8 @@ contract Unit_safeTransferFrom is Deployed {
 
   function test_revertWhen_receiverContract_reverts_withoutMessage() public {
     _wrapFixture();
-    Mock_ERC721Receiver receivingContract = new Mock_ERC721Receiver(
-          type(IERC721Receiver).interfaceId,
-          Mock_ERC721Receiver.Error.RevertWithoutMessage
-        );
+    Mock_ERC721Receiver receivingContract =
+      new Mock_ERC721Receiver(type(IERC721Receiver).interfaceId, Mock_ERC721Receiver.Error.RevertWithoutMessage);
     address operator = ALICE.addr;
     address tokenOwner = ALICE.addr;
     address recipient = address(receivingContract);
@@ -523,10 +514,8 @@ contract Unit_safeTransferFrom is Deployed {
 
   function test_revertWhen_receiverContract_panics() public {
     _wrapFixture();
-    Mock_ERC721Receiver receivingContract = new Mock_ERC721Receiver(
-          type(IERC721Receiver).interfaceId,
-          Mock_ERC721Receiver.Error.Panic
-        );
+    Mock_ERC721Receiver receivingContract =
+      new Mock_ERC721Receiver(type(IERC721Receiver).interfaceId, Mock_ERC721Receiver.Error.Panic);
     address operator = ALICE.addr;
     address tokenOwner = ALICE.addr;
     address recipient = address(receivingContract);

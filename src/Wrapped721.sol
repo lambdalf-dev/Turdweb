@@ -3,7 +3,6 @@
 /**
  * Author: Lambdalf the White
  */
-
 pragma solidity >=0.8.4 <0.9.0;
 
 import {ERC173Initializable} from "./ERC173Initializable.sol";
@@ -71,16 +70,6 @@ contract Wrapped721 is IERC165, ERC173Initializable, ERC2981Initializable, IERC7
     string memory baseUri_
   ) public initializer {
     if (asset_.code.length > 0) {
-      // address _prevAdmin_= IAsset(asset_).owner();
-      // if (tx.origin != _prevAdmin_) {
-      //   if (_prevAdmin_ != address(0)) {
-      //     revert NOT_COLLECTION_OWNER();
-      //   }
-      // }
-      // underlyingAsset = IAsset(asset_);
-      // _setBaseUri(baseUri_);
-      // _init_ERC173(admin_);
-      // _init_ERC2981(royaltyRecipient_, royaltyRate_);
       address _prevAdmin_;
       /// @solidity memory-safe-assembly
       assembly {
@@ -90,10 +79,7 @@ contract Wrapped721 is IERC165, ERC173Initializable, ERC2981Initializable, IERC7
             gt(returndatasize(), 0x1f), // The call must return at least 32 bytes.
             staticcall(gas(), asset_, 0x1c, 0x04, 0x00, 0x20)
           )
-        ) {
-          // TODO: Figure out a fallback if no owner() is found
-          revert(0x00, 0x00)
-        }
+        ) { revert(0x00, 0x00) }
         _prevAdmin_ := mload(0x00)
       }
       if (tx.origin != _prevAdmin_) {

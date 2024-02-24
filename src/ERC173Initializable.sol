@@ -3,7 +3,6 @@
 /**
  * Author: Lambdalf the White
  */
-
 pragma solidity >=0.8.4 <0.9.0;
 
 import {IERC173} from "@lambdalf-dev/ethereum-contracts/contracts/interfaces/IERC173.sol";
